@@ -20,21 +20,24 @@ export default function Home() {
   return (
     <div style={{ padding: '20px' }}>
       <h1>Arc Settlement Engine</h1>
-      <ConnectButton />
+      {/* showBalance={false} से बटन वाला बैलेंस गायब हो जाएगा */}
+      <ConnectButton showBalance={false} />
       
       {isConnected && (
         <div style={{ marginTop: '20px' }}>
-          <p>Balance: {balance?.formatted} USDC</p>
+          <h3>Account: {address}</h3>
+          <p>Available Balance: {balance ? Number(balance.value) / 10**18 : '0'} USDC</p>
           
-          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} />
-          <input placeholder="Amount (USDC)" onChange={(e) => setAmount(e.target.value)} />
-          
-          <button onClick={handleSend} disabled={!to || !amount}>
-            {isConfirming ? 'Confirming...' : 'Send USDC'}
-          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '300px' }}>
+            <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} />
+            <input placeholder="Amount (USDC)" onChange={(e) => setAmount(e.target.value)} />
+            <button onClick={handleSend} disabled={isConfirming}>
+              {isConfirming ? 'Processing...' : 'Send USDC'}
+            </button>
+          </div>
 
-          {hash && <p>Transaction Hash: {hash}</p>}
-          {isConfirmed && <p>Success! Verified on ArcScan.</p>}
+          {hash && <p>TX Hash: {hash}</p>}
+          {isConfirmed && <p>Success: Verified on ArcScan</p>}
         </div>
       )}
     </div>
