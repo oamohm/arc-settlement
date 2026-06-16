@@ -1,6 +1,6 @@
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
-import { WagmiProvider } from 'wagmi';
+import { WagmiProvider, http } from 'wagmi';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
 const arcTestnet = {
@@ -15,7 +15,10 @@ const arcTestnet = {
 const config = getDefaultConfig({
   appName: 'Arc Settlement Engine',
   projectId: 'YOUR_PROJECT_ID',
-  chains: [arcTestnet], // यहाँ सिर्फ Arc है
+  chains: [arcTestnet],
+  transports: {
+    [arcTestnet.id]: http('https://rpc.testnet.arc.network'),
+  },
   ssr: true,
 });
 
@@ -25,7 +28,7 @@ export default function App({ Component, pageProps }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider initialChain={arcTestnet}>
+        <RainbowKitProvider>
           <Component {...pageProps} />
         </RainbowKitProvider>
       </QueryClientProvider>
