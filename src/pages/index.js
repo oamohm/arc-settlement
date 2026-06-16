@@ -1,69 +1,56 @@
+// src/pages/index.js (Final Configured Version)
+
 import { useState } from 'react';
 import { useAccount, useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
-import { parseEther } from 'viem';
+import { parseUnits } from 'viem'; // 6 decimals के लिए parseEther की जगह parseUnits का उपयोग करें
 import { ConnectButton } from '@rainbow-me/rainbowkit';
+
+// Arc Testnet Config
+const ARC_TESTNET_SCAN = "https://testnet.arcscan.io"; 
 
 export default function Home() {
   const { address, isConnected } = useAccount();
-  const { data: balance, refetch: refetchBalance } = useBalance({ address });
+  const { data: balance, refetch: refetchBalance } = useBalance({ 
+    address, 
+    token: '0x3600000000000000000000000000000000000000' // USDC Contract
+  });
+  
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
 
   const { data: hash, sendTransaction, isPending: isTxPending } = useSendTransaction();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  // ट्रांजैक्शन सक्सेस होने पर बैलेंस रिफ्रेश करना
-  if (isConfirmed) {
-    refetchBalance();
-  }
+  if (isConfirmed) refetchBalance();
 
   const handleSend = () => {
     if (!to || !amount) return;
-    sendTransaction({ to, value: parseEther(amount) });
+    // 6 decimals के साथ ट्रांजैक्शन
+    sendTransaction({ to, value: parseUnits(amount, 6) });
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '400px', margin: 'auto' }}>
+    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h1>Arc Settlement Engine</h1>
-      <ConnectButton accountStatus="none" chainStatus="none" showBalance={false} />
+      <ConnectButton accountStatus="none" showBalance={false} />
       
       {isConnected && (
         <div style={{ marginTop: '20px' }}>
-          <div style={{ borderBottom: '1px solid #ccc', marginBottom: '15px', paddingBottom: '10px' }}>
-            <strong>Account:</strong> {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''}
-            <br />
-            <strong>Balance:</strong> {balance ? Number(balance.value) / 10**18 : '0'} USDC
-          </div>
+          <p>Account: {address?.slice(0,6)}...{address?.slice(-4)}</p>
+          <p>Balance: {balance ? balance.formatted : '0'} USDC</p>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <input 
-              placeholder="Receiver Address" 
-              onChange={(e) => setTo(e.target.value)} 
-              disabled={isTxPending || isConfirming} 
-              style={{ padding: '10px' }}
-            />
-            <input 
-              placeholder="Amount (USDC)" 
-              onChange={(e) => setAmount(e.target.value)} 
-              disabled={isTxPending || isConfirming} 
-              style={{ padding: '10px' }}
-            />
-            
-            <button 
-              onClick={handleSend} 
-              disabled={isTxPending || isConfirming || !to || !amount}
-              style={{ padding: '10px', background: '#0070f3', color: 'white', border: 'none', cursor: 'pointer' }}
-            >
-              {isTxPending ? 'Confirm in Wallet...' : isConfirming ? 'Processing Settlement...' : 'Send USDC'}
-            </button>
-          </div>
+          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} />
+          <input placeholder="Amount (USDC)" onChange={(e) => setAmount(e.target.value)} />
+          <button onClick={handleSend} disabled={isTxPending}>
+            {isTxPending ? 'Sending...' : 'Send USDC'}
+          </button>
 
           {hash && (
-            <div style={{ marginTop: '20px', padding: '10px', background: '#f4f4f4' }}>
-              <p>TX Status: <a href={`https://testnet.arcscan.io/tx/${hash}`} target="_blank" rel="noopener noreferrer" style={{ color: 'blue' }}>
-                {isConfirmed ? 'Confirmed & Settled' : 'Pending...'}
-              </a></p>
-            </div>
+            <p>
+              Status: <a href={`${ARC_TESTNET_SCAN}/tx/${hash}`} target="_blank">
+                {isConfirmed ? 'Confirmed' : 'Pending...'}
+              </a>
+            </p>
           )}
         </div>
       )}
