@@ -3,7 +3,7 @@ import { useAccount, useBalance, useSendTransaction, useWaitForTransactionReceip
 import { parseUnits } from 'viem';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
-// Config
+// Config: यहाँ नया एक्सप्लोरर लिंक डालें
 const USDC_CONTRACT = '0x3600000000000000000000000000000000000000';
 const ARC_SCAN_URL = "https://testnet.arcscan.app"; 
 
@@ -17,13 +17,12 @@ export default function Home() {
   const { data: hash, sendTransaction, isPending: isTxPending } = useSendTransaction();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  // ट्रांजैक्शन पूरा होते ही स्टेट रिफ्रेश
   if (isConfirmed) refetchBalance();
 
   const handleSend = async () => {
     if (!to || !amount) return;
     try {
-      // 6 decimals के लिए parseUnits
+      // 6 decimals के साथ सुरक्षित ट्रांजैक्शन
       sendTransaction({ to, value: parseUnits(amount, 6) });
     } catch (err) {
       console.error("Execution Error:", err);
@@ -31,46 +30,31 @@ export default function Home() {
   };
 
   return (
-    <div style={{ padding: '24px', fontFamily: 'monospace', maxWidth: '400px', margin: '0 auto', border: '1px solid #333' }}>
-      <h1 style={{ fontSize: '18px', marginBottom: '20px' }}>ARC SETTLEMENT ENGINE</h1>
-      
+    <div style={{ padding: '24px', fontFamily: 'sans-serif', maxWidth: '400px', margin: '0 auto', border: '1px solid #ddd', borderRadius: '8px' }}>
+      <h1>Arc Settlement Engine</h1>
       <ConnectButton accountStatus="address" chainStatus="none" showBalance={false} />
       
       {isConnected && (
         <div style={{ marginTop: '20px' }}>
-          <div style={{ padding: '15px', background: '#000', color: '#fff', borderRadius: '4px' }}>
-            <p>balance: {balance?.formatted} usdc</p>
+          <div style={{ padding: '10px', background: '#f9f9f9', borderRadius: '4px' }}>
+            <p><strong>Balance:</strong> {balance?.formatted} USDC</p>
           </div>
           
-          <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <input 
-              placeholder="receiver address" 
-              onChange={(e) => setTo(e.target.value)} 
-              disabled={isTxPending || isConfirming}
-              style={{ padding: '12px', border: '1px solid #ddd' }}
-            />
-            <input 
-              placeholder="amount (usdc)" 
-              type="number"
-              onChange={(e) => setAmount(e.target.value)} 
-              disabled={isTxPending || isConfirming} 
-              style={{ padding: '12px', border: '1px solid #ddd' }}
-            />
-            
-            <button 
-              onClick={handleSend} 
-              disabled={isTxPending || isConfirming || !to || !amount}
-              style={{ padding: '15px', background: '#0070f3', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
-            >
-              {isTxPending ? 'confirming...' : isConfirming ? 'settling...' : 'send transaction'}
-            </button>
-          </div>
+          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} style={{ display: 'block', margin: '15px 0', padding: '10px', width: '90%' }} />
+          <input placeholder="Amount (USDC)" type="number" onChange={(e) => setAmount(e.target.value)} style={{ display: 'block', margin: '15px 0', padding: '10px', width: '90%' }} />
+          
+          <button 
+            onClick={handleSend} 
+            disabled={isTxPending || isConfirming || !to || !amount}
+            style={{ padding: '12px 20px', cursor: 'pointer', background: '#0070f3', color: '#fff', border: 'none', borderRadius: '4px' }}
+          >
+            {isTxPending ? 'Confirming...' : isConfirming ? 'Settling on Chain...' : 'Send USDC'}
+          </button>
 
           {hash && (
-            <div style={{ marginTop: '20px', padding: '10px', border: '1px dashed #333' }}>
-              <p>tx hash: {hash.slice(0, 10)}...</p>
+            <div style={{ marginTop: '20px', padding: '10px', border: '1px solid #0070f3' }}>
               <a href={`${ARC_SCAN_URL}/tx/${hash}`} target="_blank" rel="noreferrer" style={{ color: '#0070f3' }}>
-                {isConfirmed ? 'view on explorer' : 'waiting for network...'}
+                {isConfirmed ? 'Success! View on ArcScan' : 'Confirming on Chain...'}
               </a>
             </div>
           )}
