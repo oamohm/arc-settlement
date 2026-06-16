@@ -1,22 +1,21 @@
 import '@rainbow-me/rainbowkit/styles.css';
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit';
 import { WagmiProvider } from 'wagmi';
-import { defineChain } from 'viem';
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
-// Arc Testnet कॉन्फ़िगरेशन
-const arcTestnet = defineChain({
-  id: 2026, // यहाँ अपनी सही Chain ID डालें
+const arcTestnet = {
+  id: 2026,
   name: 'Arc Testnet',
   nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
   rpcUrls: { default: { http: ['https://rpc.testnet.arc.network'] } },
   blockExplorers: { default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' } },
-});
+  testnet: true,
+};
 
 const config = getDefaultConfig({
   appName: 'Arc Settlement Engine',
-  projectId: 'YOUR_PROJECT_ID', 
-  chains: [arcTestnet],
+  projectId: 'YOUR_PROJECT_ID',
+  chains: [arcTestnet], // यहाँ सिर्फ Arc है
   ssr: true,
 });
 
@@ -26,7 +25,7 @@ export default function App({ Component, pageProps }) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
+        <RainbowKitProvider initialChain={arcTestnet}>
           <Component {...pageProps} />
         </RainbowKitProvider>
       </QueryClientProvider>
