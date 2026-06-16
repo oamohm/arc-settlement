@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useAccount, useBalance, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
-import { parseUnits } from 'viem';
+import { parseUnits, encodeFunctionData, parseAbi } from 'viem';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
-// Config: अब नया और सही एक्सप्लोरर लिंक है
 const USDC_CONTRACT = '0x3600000000000000000000000000000000000000';
 const ARC_SCAN_URL = "https://testnet.arcscan.app"; 
+
+// ERC-20 Transfer ABI
+const erc20Abi = parseAbi([
+  'function transfer(address to, uint256 amount) returns (bool)'
+]);
 
 export default function Home() {
   const { address, isConnected } = useAccount();
@@ -22,38 +26,41 @@ export default function Home() {
   const handleSend = async () => {
     if (!to || !amount) return;
     try {
-      sendTransaction({ to, value: parseUnits(amount, 6) });
+      const amountInUnits = parseUnits(amount, 6);
+      
+      // यहाँ हम सीधे कॉन्ट्रैक्ट कॉल कर रहे हैं
+      sendTransaction({ 
+        to: USDC_CONTRACT,
+        data: encodeFunctionData({
+          abi: erc20Abi,
+          functionName: 'transfer',
+          args: [to, amountInUnits]
+        })
+      });
     } catch (err) {
       console.error("Execution Error:", err);
     }
   };
 
   return (
-    <div style={{ padding: '24px', fontFamily: 'sans-serif', maxWidth: '400px', margin: '0 auto', border: '1px solid #ddd', borderRadius: '8px' }}>
-      <h1>Arc Settlement Engine</h1>
+    <div style={{ padding: '24px', fontFamily: 'monospace', maxWidth: '400px', margin: '0 auto', border: '1px solid #333' }}>
+      <h1>ARC SETTLEMENT ENGINE</h1>
       <ConnectButton accountStatus="address" chainStatus="none" showBalance={false} />
       
       {isConnected && (
         <div style={{ marginTop: '20px' }}>
-          <div style={{ padding: '10px', background: '#f9f9f9', borderRadius: '4px' }}>
-            <p><strong>Balance:</strong> {balance?.formatted} USDC</p>
-          </div>
+          <p>balance: {balance?.formatted} usdc</p>
+          <input placeholder="receiver address" onChange={(e) => setTo(e.target.value)} style={{ display: 'block', width: '90%', margin: '10px 0', padding: '8px' }} />
+          <input placeholder="amount (usdc)" type="number" onChange={(e) => setAmount(e.target.value)} style={{ display: 'block', width: '90%', margin: '10px 0', padding: '8px' }} />
           
-          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} style={{ display: 'block', margin: '15px 0', padding: '10px', width: '90%' }} />
-          <input placeholder="Amount (USDC)" type="number" onChange={(e) => setAmount(e.target.value)} style={{ display: 'block', margin: '15px 0', padding: '10px', width: '90%' }} />
-          
-          <button 
-            onClick={handleSend} 
-            disabled={isTxPending || isConfirming || !to || !amount}
-            style={{ padding: '12px 20px', cursor: 'pointer', background: '#0070f3', color: '#fff', border: 'none', borderRadius: '4px' }}
-          >
-            {isTxPending ? 'Confirming...' : isConfirming ? 'Settling on Chain...' : 'Send USDC'}
+          <button onClick={handleSend} disabled={isTxPending || isConfirming} style={{ padding: '10px 20px', cursor: 'pointer', background: '#000', color: '#fff' }}>
+            {isTxPending ? 'confirming...' : isConfirming ? 'settling...' : 'send usdc'}
           </button>
 
           {hash && (
-            <div style={{ marginTop: '20px', padding: '10px', border: '1px solid #0070f3' }}>
-              <a href={`${ARC_SCAN_URL}/tx/${hash}`} target="_blank" rel="noreferrer" style={{ color: '#0070f3' }}>
-                {isConfirmed ? 'Success! View on ArcScan' : 'Confirming on Chain...'}
+            <div style={{ marginTop: '20px' }}>
+              <a href={`${ARC_SCAN_URL}/tx/${hash}`} target="_blank" rel="noreferrer" style={{ color: 'blue' }}>
+                {isConfirmed ? '✅ settled on chain' : '⏳ transaction pending...'}
               </a>
             </div>
           )}
