@@ -1,17 +1,12 @@
-import { useAccount, useReadContract } from 'wagmi';
+import { useAccount, useBalance } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-
-// Arc Testnet का आधिकारिक USDC कॉन्ट्रैक्ट एड्रेस
-const ARC_USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
 
 export default function Home() {
   const { address, isConnected } = useAccount();
 
-  const { data: balance } = useReadContract({
-    address: ARC_USDC_ADDRESS,
-    abi: ['function balanceOf(address owner) view returns (uint256)'],
-    functionName: 'balanceOf',
-    args: [address],
+  // native gas token (USDC) का बैलेंस सीधे Wagmi के useBalance हुक से
+  const { data: balance } = useBalance({
+    address: address,
   });
 
   return (
@@ -22,7 +17,7 @@ export default function Home() {
         <div style={{ marginTop: '20px' }}>
           <p>Network: Arc Testnet</p>
           <p>
-            Balance: {balance ? (Number(balance) / 10**18).toFixed(2) : '0'} USDC
+            Balance: {balance ? balance.formatted : '0'} {balance?.symbol}
           </p>
         </div>
       )}
