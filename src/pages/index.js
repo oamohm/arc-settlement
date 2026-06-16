@@ -3,16 +3,13 @@ import { useAccount, useBalance, useSendTransaction, useWaitForTransactionReceip
 import { parseUnits } from 'viem';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
-// Arc Testnet कॉन्फ़िगरेशन
+// Config
 const USDC_CONTRACT = '0x3600000000000000000000000000000000000000';
-const ARC_SCAN_URL = "https://testnet.arcscan.io";
+const ARC_SCAN_URL = "https://testnet.arcscan.app"; 
 
 export default function Home() {
   const { address, isConnected } = useAccount();
-  const { data: balance, refetch: refetchBalance } = useBalance({ 
-    address, 
-    token: USDC_CONTRACT 
-  });
+  const { data: balance, refetch: refetchBalance } = useBalance({ address, token: USDC_CONTRACT });
   
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
@@ -20,69 +17,64 @@ export default function Home() {
   const { data: hash, sendTransaction, isPending: isTxPending } = useSendTransaction();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  // ट्रांजैक्शन सक्सेस होने पर बैलेंस रिफ्रेश और क्लियरिंग
-  if (isConfirmed) {
-    refetchBalance();
-  }
+  // ट्रांजैक्शन पूरा होते ही स्टेट रिफ्रेश
+  if (isConfirmed) refetchBalance();
 
   const handleSend = async () => {
     if (!to || !amount) return;
     try {
-      sendTransaction({ 
-        to, 
-        value: parseUnits(amount, 6) 
-      });
+      // 6 decimals के लिए parseUnits
+      sendTransaction({ to, value: parseUnits(amount, 6) });
     } catch (err) {
       console.error("Execution Error:", err);
     }
   };
 
   return (
-    <div style={{ padding: '24px', fontFamily: 'sans-serif', maxWidth: '400px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '20px', margin: '0' }}>Arc Settlement Engine</h1>
-      </header>
+    <div style={{ padding: '24px', fontFamily: 'monospace', maxWidth: '400px', margin: '0 auto', border: '1px solid #333' }}>
+      <h1 style={{ fontSize: '18px', marginBottom: '20px' }}>ARC SETTLEMENT ENGINE</h1>
       
-      <ConnectButton accountStatus="none" chainStatus="none" showBalance={false} />
+      <ConnectButton accountStatus="address" chainStatus="none" showBalance={false} />
       
       {isConnected && (
-        <section style={{ marginTop: '24px' }}>
-          <div style={{ padding: '16px', backgroundColor: '#f4f4f4', borderRadius: '8px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '14px' }}>Account: {address?.slice(0, 6)}...{address?.slice(-4)}</div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold' }}>Balance: {balance?.formatted} USDC</div>
+        <div style={{ marginTop: '20px' }}>
+          <div style={{ padding: '15px', background: '#000', color: '#fff', borderRadius: '4px' }}>
+            <p>balance: {balance?.formatted} usdc</p>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <input 
-              placeholder="Receiver Address" 
+              placeholder="receiver address" 
               onChange={(e) => setTo(e.target.value)} 
               disabled={isTxPending || isConfirming}
-              style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ddd' }}
+              style={{ padding: '12px', border: '1px solid #ddd' }}
             />
             <input 
-              placeholder="Amount (USDC)" 
+              placeholder="amount (usdc)" 
+              type="number"
               onChange={(e) => setAmount(e.target.value)} 
               disabled={isTxPending || isConfirming} 
-              style={{ padding: '12px', borderRadius: '4px', border: '1px solid #ddd' }}
+              style={{ padding: '12px', border: '1px solid #ddd' }}
             />
             
             <button 
               onClick={handleSend} 
               disabled={isTxPending || isConfirming || !to || !amount}
-              style={{ padding: '12px', backgroundColor: '#000', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              style={{ padding: '15px', background: '#0070f3', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
             >
-              {isTxPending ? 'Confirming...' : isConfirming ? 'Settling...' : 'Send USDC'}
+              {isTxPending ? 'confirming...' : isConfirming ? 'settling...' : 'send transaction'}
             </button>
           </div>
 
           {hash && (
-            <div style={{ marginTop: '20px', padding: '12px', border: '1px solid #000' }}>
-              <a href={`${ARC_SCAN_URL}/tx/${hash}`} target="_blank" rel="noopener noreferrer" style={{ color: '#000', textDecoration: 'none', fontWeight: 'bold' }}>
-                {isConfirmed ? 'Success. View on ArcScan' : 'Confirming on Chain...'}
+            <div style={{ marginTop: '20px', padding: '10px', border: '1px dashed #333' }}>
+              <p>tx hash: {hash.slice(0, 10)}...</p>
+              <a href={`${ARC_SCAN_URL}/tx/${hash}`} target="_blank" rel="noreferrer" style={{ color: '#0070f3' }}>
+                {isConfirmed ? 'view on explorer' : 'waiting for network...'}
               </a>
             </div>
           )}
-        </section>
+        </div>
       )}
     </div>
   );
