@@ -1,61 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useAccount, useReadContract } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
 
+// आर्क का असली USDC कॉन्ट्रैक्ट एड्रेस
 const ARC_USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
-const abi = ['function balanceOf(address owner) view returns (uint256)'];
 
 export default function Home() {
-  const { isConnected, address, chain } = useAccount();
-  const [amount, setAmount] = useState('');
-  const { writeContract } = useWriteContract();
+  const { address, isConnected } = useAccount();
 
-  // बैलेंस रीड करने का हुक
-  const { data: balance, refetch } = useReadContract({
+  // डेसिमल को 18 के हिसाब से रीड करें
+  const { data: balance } = useReadContract({
     address: ARC_USDC_ADDRESS,
-    abi,
+    abi: ['function balanceOf(address owner) view returns (uint256)'],
     functionName: 'balanceOf',
     args: [address],
   });
 
-  // ऑटो-रिफ्रेश बैलेंस
-  useEffect(() => {
-    if (isConnected) refetch();
-  }, [isConnected, refetch]);
-
-  const handleSend = () => {
-    if (!amount) return;
-    alert(`ट्रांजैक्शन इनिशिएट: ${amount} USDC आर्क नेटवर्क पर`);
-    // यहाँ बाद में असली कॉन्ट्रैक्ट कॉल जुड़ेगा
-  };
-
   return (
-    <div style={{ padding: '40px', fontFamily: 'sans-serif' }}>
+    <div style={{ padding: '20px' }}>
       <h1>Arc Settlement Engine</h1>
       <ConnectButton />
-      
       {isConnected && (
-        <div style={{ marginTop: '30px', border: '1px solid #ccc', padding: '20px' }}>
-          <p>नेटवर्क: {chain?.name || 'Loading...'}</p>
-          <p style={{ fontWeight: 'bold' }}>
-            उपलब्ध USDC: {balance ? (Number(balance) / 10**6).toString() : '0'}
-          </p>
-          
-          <div style={{ marginTop: '20px' }}>
-            <input 
-              type="number" 
-              placeholder="राशि डालें" 
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              style={{ padding: '10px', width: '200px' }}
-            />
-            <button 
-              onClick={handleSend}
-              style={{ marginLeft: '10px', padding: '10px 20px', cursor: 'pointer' }}
-            >
-              सेंड सेटलमेंट
-            </button>
-          </div>
+        <div style={{ marginTop: '20px' }}>
+          <p>नेटवर्क: Arc Testnet</p>
+          <p>उपलब्ध USDC: {balance ? (Number(balance) / 10**18).toFixed(2) : '0'}</p>
         </div>
       )}
     </div>
