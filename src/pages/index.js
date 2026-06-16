@@ -3,7 +3,7 @@ import { useAccount, useBalance, useSendTransaction, useWaitForTransactionReceip
 import { parseUnits } from 'viem';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
-// Config: यहाँ नया एक्सप्लोरर लिंक डालें
+// Config: अब नया और सही एक्सप्लोरर लिंक है
 const USDC_CONTRACT = '0x3600000000000000000000000000000000000000';
 const ARC_SCAN_URL = "https://testnet.arcscan.app"; 
 
@@ -22,7 +22,6 @@ export default function Home() {
   const handleSend = async () => {
     if (!to || !amount) return;
     try {
-      // 6 decimals के साथ सुरक्षित ट्रांजैक्शन
       sendTransaction({ to, value: parseUnits(amount, 6) });
     } catch (err) {
       console.error("Execution Error:", err);
