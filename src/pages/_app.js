@@ -1,14 +1,5 @@
-// ... (बाकी सब वही रखें)
+// इसे बदलें:
+<p>उपलब्ध USDC: {balance ? (Number(balance) / 10**18).toFixed(2) : '0'}</p>
 
-export default function App({ Component, pageProps }) {
-  return (
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        {/* locale="en-US" जोड़ने से पूरा UI इंग्लिश में रहेगा */}
-        <RainbowKitProvider locale="en-US">
-          <Component {...pageProps} />
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
-  );
-}
+// इसमें:
+<p>Available USDC: {balance ? (Number(balance) / 10**18).toFixed(2) : '0'}</p>
