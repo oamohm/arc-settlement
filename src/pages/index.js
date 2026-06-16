@@ -1,13 +1,12 @@
 import { useAccount, useReadContract } from 'wagmi';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
-// Arc Testnet पर USDC के लिए सही सिस्टम एड्रेस
+// Arc Testnet का आधिकारिक USDC कॉन्ट्रैक्ट एड्रेस
 const ARC_USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
 
 export default function Home() {
   const { address, isConnected } = useAccount();
 
-  // 18 डेसिमल के साथ बैलेंस पढ़ना
   const { data: balance } = useReadContract({
     address: ARC_USDC_ADDRESS,
     abi: ['function balanceOf(address owner) view returns (uint256)'],
@@ -23,7 +22,7 @@ export default function Home() {
         <div style={{ marginTop: '20px' }}>
           <p>Network: Arc Testnet</p>
           <p>
-            Available USDC: {balance ? (Number(balance) / 10**18).toFixed(2) : '0'}
+            Balance: {balance ? (Number(balance) / 10**18).toFixed(2) : '0'} USDC
           </p>
         </div>
       )}
