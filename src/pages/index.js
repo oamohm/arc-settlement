@@ -9,60 +9,50 @@ export default function Home() {
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
 
-  const { data: hash, sendTransaction } = useSendTransaction();
+  // 1. ट्रांजैक्शन भेजने का हुक
+  const { data: hash, sendTransaction, isPending: isTxPending } = useSendTransaction();
+  
+  // 2. ट्रांजैक्शन कन्फर्मेशन का हुक
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
   const handleSend = () => {
     if (!to || !amount) return;
-    sendTransaction({ to, value: parseEther(amount) });
+    try {
+      sendTransaction({ to, value: parseEther(amount) });
+    } catch (err) {
+      console.error("ट्रांजैक्शन फेल:", err);
+    }
   };
-
-  // एड्रेस को छोटा करने का फंक्शन
-  const truncatedAddress = address ? `${address.slice(0, 6)}...${address.slice(-4)}` : '';
 
   return (
     <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
       <h1>Arc Settlement Engine</h1>
-      <ConnectButton showBalance={false} />
+      <ConnectButton accountStatus="none" chainStatus="none" showBalance={false} />
       
       {isConnected && (
         <div style={{ marginTop: '20px' }}>
-          <h3>Account: {truncatedAddress}</h3>
-          <p>Available Balance: {balance ? Number(balance.value) / 10**18 : '0'} USDC</p>
+          <h3>Account: {address ? `${address.slice(0, 6)}...${address.slice(-4)}` : ''}</h3>
+          <p>Balance: {balance ? Number(balance.value) / 10**18 : '0'} USDC</p>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxWidth: '300px' }}>
-            <input 
-              placeholder="Receiver Address" 
-              onChange={(e) => setTo(e.target.value)} 
-              style={{ padding: '8px' }}
-            />
-            <input 
-              placeholder="Amount (USDC)" 
-              onChange={(e) => setAmount(e.target.value)} 
-              style={{ padding: '8px' }}
-            />
+            <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} disabled={isTxPending || isConfirming} />
+            <input placeholder="Amount (USDC)" onChange={(e) => setAmount(e.target.value)} disabled={isTxPending || isConfirming} />
+            
             <button 
               onClick={handleSend} 
-              disabled={isConfirming}
-              style={{ padding: '10px', cursor: 'pointer' }}
+              disabled={isTxPending || isConfirming || !to || !amount}
             >
-              {isConfirming ? 'Processing...' : 'Send USDC'}
+              {isTxPending ? 'Confirm in Wallet...' : isConfirming ? 'Waiting for block...' : 'Send USDC'}
             </button>
           </div>
 
           {hash && (
             <p>
-              TX Hash: <a 
-                href={`https://testnet.arcscan.io/tx/${hash}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                style={{ color: 'blue' }}
-              >
-                {hash.slice(0, 10)}... (View on ArcScan)
+              TX Status: <a href={`https://testnet.arcscan.io/tx/${hash}`} target="_blank" style={{ color: 'blue' }}>
+                {isConfirmed ? 'Confirmed & Settled' : 'Pending...'}
               </a>
             </p>
           )}
-          {isConfirmed && <p style={{ color: 'green', fontWeight: 'bold' }}>Transaction Confirmed & Settled!</p>}
         </div>
       )}
     </div>
