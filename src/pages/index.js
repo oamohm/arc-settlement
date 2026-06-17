@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useWriteContract, useAccount, useConnect } from 'wagmi';
-import { abi } from '../utils/abi';
+import { abi } from '../../utils/abi';
 
 export default function ArcSettlement() {
   const { isConnected, address } = useAccount();
@@ -13,7 +13,7 @@ export default function ArcSettlement() {
   const handleSettlement = async () => {
     try {
       if (!to || !amount) {
-        alert('कृपया सभी जानकारी भरें');
+        alert('सब जानकारी भरें');
         return;
       }
       writeContract({
@@ -34,7 +34,7 @@ export default function ArcSettlement() {
         <button onClick={() => connect({ connector: connectors[0] })}>Connect Wallet</button>
       ) : (
         <div>
-          <p>वॉलेट एड्रेस: {address}</p>
+          <p>Connected: {address}</p>
           <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} />
           <input placeholder="Amount (WEI)" type="number" onChange={(e) => setAmount(e.target.value)} />
           <button onClick={handleSettlement}>Execute Transaction</button>
