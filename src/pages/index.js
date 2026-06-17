@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useWriteContract, useAccount, useConnect } from 'wagmi';
+import { abi } from '../utils/abi'; // यहाँ से ABI जुड़ जाएगी
 
 export default function ArcSettlement() {
   const { isConnected } = useAccount();
@@ -17,11 +18,19 @@ export default function ArcSettlement() {
       ) : (
         <div>
           <p>Wallet Connected</p>
-          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} style={{ display: 'block', margin: '10px 0' }} />
-          <input placeholder="Amount (USDC)" onChange={(e) => setAmount(e.target.value)} style={{ display: 'block', margin: '10px 0' }} />
+          <input 
+            placeholder="Receiver Address" 
+            onChange={(e) => setTo(e.target.value)} 
+            style={{ display: 'block', margin: '10px 0' }} 
+          />
+          <input 
+            placeholder="Amount (USDC)" 
+            onChange={(e) => setAmount(e.target.value)} 
+            style={{ display: 'block', margin: '10px 0' }} 
+          />
           <button onClick={() => writeContract({ 
-            address: '0x...', // यहाँ कॉन्ट्रैक्ट एड्रेस आएगा
-            abi: [], 
+            address: 'YOUR_CONTRACT_ADDRESS', // यहाँ डिप्लॉयमेंट के बाद का एड्रेस डालें
+            abi: abi, 
             functionName: 'settle', 
             args: [to, amount] 
           })}>
