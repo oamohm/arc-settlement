@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useWriteContract, useAccount, useConnect } from 'wagmi';
-import { abi } from '../utils/abi'; 
+import { abi } from '../utils/abi';
 
 export default function ArcSettlement() {
   const { isConnected, address } = useAccount();
@@ -12,17 +12,17 @@ export default function ArcSettlement() {
   const handleSettlement = async () => {
     try {
       if (!to || !amount) {
-        alert("कृपया सभी फील्ड भरें");
+        alert('सब जानकारी भरें');
         return;
       }
       writeContract({
-        address: 0x5AD1C3710D65Fc824576A71143Dd63b2C30C6174
+        address: '0x5AD1C3710D65Fc824576A71143Dd63b2C30C6174',
         abi: abi,
         functionName: 'settle',
-        args: [to, BigInt(amount * 10**6)],
+        args: [to, BigInt(amount)],
       });
     } catch (err) {
-      console.error("ट्रांजैक्शन में गलती:", err);
+      console.error('डिप्लॉयमेंट में एरर:', err);
     }
   };
 
@@ -33,12 +33,10 @@ export default function ArcSettlement() {
         <button onClick={() => connect({ connector: connectors[0] })}>Connect Wallet</button>
       ) : (
         <div>
-          <p>Connected: {address?.substring(0,6)}...</p>
+          <p>Connected: {address}</p>
           <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} />
-          <br/>
-          <input placeholder="Amount (USDC)" type="number" onChange={(e) => setAmount(e.target.value)} />
-          <br/>
-          <button onClick={handleSettlement}>Confirm Transaction</button>
+          <input placeholder="Amount (WEI)" type="number" onChange={(e) => setAmount(e.target.value)} />
+          <button onClick={handleSettlement}>Execute Transaction</button>
         </div>
       )}
     </div>
