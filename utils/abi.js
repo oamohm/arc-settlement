@@ -1,13 +1,9 @@
 export const abi = [
+  // यहाँ सिर्फ वो लंबा वाला ABI कोड पेस्ट करें जो आपने Remix से लिया था
   {
-    "type": "function",
-    "name": "settle",
-    "inputs": [
-      { "name": "_to", "type": "address" },
-      { "name": "_amount", "type": "uint256" }
-    ],
-    "outputs": [],
-    "stateMutability": "payable"
-  }
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  // ... बाकी सारा ABI कोड
 ];
-
