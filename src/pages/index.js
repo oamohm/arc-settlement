@@ -16,7 +16,7 @@ export default function ArcSettlement() {
         return;
       }
       writeContract({
-        address: 'YOUR_CONTRACT_ADDRESS', // यहाँ एड्रेस डालें
+        address: 0x5AD1C3710D65Fc824576A71143Dd63b2C30C6174
         abi: abi,
         functionName: 'settle',
         args: [to, BigInt(amount * 10**6)],
