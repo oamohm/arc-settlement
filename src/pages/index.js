@@ -1,42 +1,19 @@
-import { useState } from 'react';
-import { useAccount, useSendTransaction, useWaitForTransactionReceipt } from 'wagmi';
-import { parseUnits, encodeFunctionData, parseAbi } from 'viem';
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+// यह कोड आपके index.js में होगा, जो वॉलेट से कॉन्ट्रैक्ट को जोड़ेगा
+import { useWriteContract } from 'wagmi';
+import { abi } from '../utils/abi'; // यहाँ कॉन्ट्रैक्ट की ABI रहेगी
 
-const USDC_CONTRACT = '0x3600000000000000000000000000000000000000';
-const erc20Abi = parseAbi(['function transfer(address to, uint256 amount) returns (bool)']);
+export default function SettlementPage() {
+  const { writeContract } = useWriteContract();
 
-export default function Home() {
-  const { isConnected } = useAccount();
-  const [to, setTo] = useState('');
-  const [amount, setAmount] = useState('');
-
-  const { data: hash, sendTransaction, isPending } = useSendTransaction();
-  const { isLoading, isSuccess } = useWaitForTransactionReceipt({ hash });
-
-  const handleSend = () => {
-    if (!to || !amount) return;
-    const amountInUnits = parseUnits(amount, 6);
-    sendTransaction({
-      to: USDC_CONTRACT,
-      data: encodeFunctionData({ abi: erc20Abi, functionName: 'transfer', args: [to, amountInUnits] })
+  const handleSettlement = async (toAddress, amount) => {
+    // कॉन्ट्रैक्ट कॉल: यहीं से पैसा ट्रेजरी और रिसीवर में बंटेगा
+    writeContract({
+      address: 'YOUR_DEPLOYED_CONTRACT_ADDRESS',
+      abi: abi,
+      functionName: 'settle',
+      args: [toAddress, amount],
     });
   };
 
-  return (
-    <div style={{ padding: '20px' }}>
-      <h1>Arc Settlement Engine</h1>
-      <ConnectButton />
-      {isConnected && (
-        <div style={{ marginTop: '20px' }}>
-          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} />
-          <input placeholder="Amount (USDC)" type="number" onChange={(e) => setAmount(e.target.value)} />
-          <button onClick={handleSend} disabled={isPending || isLoading}>
-            {isPending ? 'Sending...' : 'Confirm Transaction'}
-          </button>
-        </div>
-      )}
-    </div>
-  );
+  // UI में बटन पर onClick={handleSettlement} जोड़ें
 }
-
