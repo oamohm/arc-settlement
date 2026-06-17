@@ -1,26 +1,34 @@
 import { useState } from 'react';
-import { useWriteContract } from 'wagmi';
+import { useWriteContract, useAccount, useConnect } from 'wagmi';
 
 export default function ArcSettlement() {
+  const { isConnected } = useAccount();
+  const { connect, connectors } = useConnect();
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
   const { writeContract } = useWriteContract();
 
-  const handleConfirm = () => {
-    // यहाँ ट्रांजैक्शन की लॉजिक है जो एरर को खत्म करेगी
-    writeContract({
-      address: 'YOUR_CONTRACT_ADDRESS_HERE', // यहाँ वो एड्रेस डालें जो डिप्लॉयमेंट के बाद मिलेगा
-      abi: [/* यहाँ कॉन्ट्रैक्ट का ABI डालें */],
-      functionName: 'settle',
-      args: [to, amount],
-    });
-  };
-
   return (
-    <div>
-      <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} />
-      <input placeholder="Amount (USDC)" onChange={(e) => setAmount(e.target.value)} />
-      <button onClick={handleConfirm}>Confirm Transaction</button>
+    <div style={{ padding: '20px' }}>
+      <h1>Arc Settlement Engine</h1>
+      
+      {!isConnected ? (
+        <button onClick={() => connect({ connector: connectors[0] })}>Connect Wallet</button>
+      ) : (
+        <div>
+          <p>Wallet Connected</p>
+          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} style={{ display: 'block', margin: '10px 0' }} />
+          <input placeholder="Amount (USDC)" onChange={(e) => setAmount(e.target.value)} style={{ display: 'block', margin: '10px 0' }} />
+          <button onClick={() => writeContract({ 
+            address: '0x...', // यहाँ कॉन्ट्रैक्ट एड्रेस आएगा
+            abi: [], 
+            functionName: 'settle', 
+            args: [to, amount] 
+          })}>
+            Confirm Transaction
+          </button>
+        </div>
+      )}
     </div>
   );
 }
