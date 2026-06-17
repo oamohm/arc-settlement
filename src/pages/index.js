@@ -1,43 +1,43 @@
 'use client';
 import { useState } from 'react';
-import { useWriteContract, useAccount, useConnect } from 'wagmi';
+import { useWriteContract, useAccount, useBalance, useWaitForTransactionReceipt } from 'wagmi';
 import { abi } from '../../utils/abi';
 
 export default function ArcSettlement() {
   const { isConnected, address } = useAccount();
-  const { connect, connectors } = useConnect();
+  const { data: balance } = useBalance({ address });
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
-  const { writeContract } = useWriteContract();
+  
+  const { data: hash, writeContract, isPending } = useWriteContract();
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  const handleSettlement = async () => {
-    try {
-      if (!to || !amount) {
-        alert('सब जानकारी भरें');
-        return;
-      }
-      writeContract({
-        address: '0x5AD1C3710D65Fc824576A71143Dd63b2C30C6174',
-        abi: abi,
-        functionName: 'settle',
-        args: [to, BigInt(amount)],
-      });
-    } catch (err) {
-      console.error('ट्रांजैक्शन में एरर:', err);
-    }
+  const handleSettlement = () => {
+    if (!to || !amount) return;
+    writeContract({
+      address: '0x5AD1C3710D65Fc824576A71143Dd63b2C30C6174',
+      abi: abi,
+      functionName: 'settle',
+      args: [to, BigInt(amount)],
+    });
   };
 
   return (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
+    <div style={{ maxWidth: '400px', margin: '40px auto', fontFamily: 'sans-serif' }}>
       <h1>Arc Settlement</h1>
-      {!isConnected ? (
-        <button onClick={() => connect({ connector: connectors[0] })}>Connect Wallet</button>
-      ) : (
+      {!isConnected ? <p>wallet disconnected</p> : (
         <div>
-          <p>Connected: {address}</p>
-          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} />
-          <input placeholder="Amount (WEI)" type="number" onChange={(e) => setAmount(e.target.value)} />
-          <button onClick={handleSettlement}>Execute Transaction</button>
+          <p>address: {address?.slice(0, 6)}...{address?.slice(-4)}</p>
+          <p>balance: {balance?.formatted} {balance?.symbol}</p>
+          <input placeholder="receiver address" onChange={(e) => setTo(e.target.value)} style={{ display: 'block', margin: '10px 0' }} />
+          <input placeholder="amount (wei)" type="number" onChange={(e) => setAmount(e.target.value)} style={{ display: 'block', margin: '10px 0' }} />
+          <button onClick={handleSettlement} disabled={isPending}>
+            {isPending ? 'confirming...' : 'execute transaction'}
+          </button>
+          
+          {hash && <div>tx hash: {hash.slice(0, 10)}...</div>}
+          {isConfirming && <div>waiting for confirmation...</div>}
+          {isConfirmed && <div style={{ color: 'green' }}>transaction successful</div>}
         </div>
       )}
     </div>
