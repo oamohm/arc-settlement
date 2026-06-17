@@ -1,3 +1,4 @@
+'use client';
 import { useState } from 'react';
 import { useWriteContract, useAccount, useConnect } from 'wagmi';
 import { abi } from '../utils/abi';
