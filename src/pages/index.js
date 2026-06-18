@@ -1,4 +1,3 @@
-'use client';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount, useBalance, useWriteContract } from 'wagmi';
 import { useState } from 'react';
@@ -23,13 +22,13 @@ export default function Home() {
   };
 
   return (
-    <main style={{ padding: '20px' }}>
+    <main style={{ padding: '20px', textAlign: 'center' }}>
       <h1>Arc Settlement</h1>
       <ConnectButton />
       {isConnected && (
         <div style={{ marginTop: '20px' }}>
-          <p>Account: {address}</p>
-          <p>Balance: {balance?.formatted} {balance?.symbol}</p>
+          <p><strong>Account:</strong> {address}</p>
+          <p><strong>Balance:</strong> {balance?.formatted} {balance?.symbol}</p>
           <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} />
           <input placeholder="Amount (USDC)" type="number" onChange={(e) => setAmount(e.target.value)} />
           <button onClick={handleSettle}>Settle</button>
