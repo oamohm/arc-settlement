@@ -20,7 +20,6 @@ export default function Home() {
     if (!window.ethereum || !address || !amount) return;
     
     try {
-      // Amount को parseEther का उपयोग करके Wei में बदलें और फिर Hex में
       const valueInWei = parseEther(amount);
       const valueHex = '0x' + valueInWei.toString(16);
 
@@ -31,7 +30,7 @@ export default function Home() {
         params: [{ 
           from: accounts[0], 
           to: address, 
-          value: valueHex // अब यह सही हेक्स फॉर्मेट में है
+          value: valueHex 
         }],
       });
 
@@ -46,7 +45,7 @@ export default function Home() {
       setHistory(updatedHistory);
       localStorage.setItem('txHistory', JSON.stringify(updatedHistory));
       
-      alert(`Transaction Successful! View details: https://testnet.arcscan.app/tx/${txHash}`);
+      alert("Transaction Successful!");
       loadData(accounts[0]);
     } catch (err) {
       alert("Transaction Failed: " + err.message);
