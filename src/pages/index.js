@@ -9,35 +9,32 @@ export default function Home() {
   const { data: balance } = useBalance({ address });
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
-
+  
   const { data: hash, writeContract, isPending } = useWriteContract();
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
   const execute = () => {
-    writeContract({
-      address: '0x5AD1C3710D65Fc824576A71143Dd63b2C30C6174',
-      abi,
-      functionName: 'settle',
-      args: [to, BigInt(amount || 0)],
-    });
+    if (!to || !amount) return;
+    writeContract({ address: '0x5AD1C3710D65Fc824576A71143Dd63b2C30C6174', abi, functionName: 'settle', args: [to, BigInt(amount)] });
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <main style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
       <h1>arc settlement</h1>
       {!isConnected ? (
         <button onClick={() => connect({ connector: connectors[0] })}>connect wallet</button>
       ) : (
-        <div>
-          <p>account: {address}</p>
+        <section>
+          <p>account: {address?.slice(0, 6)}...{address?.slice(-4)}</p>
           <p>balance: {balance?.formatted} {balance?.symbol}</p>
-          <input placeholder="to" onChange={(e) => setTo(e.target.value)} />
-          <input placeholder="amount" type="number" onChange={(e) => setAmount(e.target.value)} />
-          <button onClick={execute} disabled={isPending}>{isPending ? 'pending' : 'settle'}</button>
+          <input placeholder="receiver address" onChange={(e) => setTo(e.target.value)} style={{ width: '100%', margin: '10px 0' }} />
+          <input placeholder="amount (wei)" type="number" onChange={(e) => setAmount(e.target.value)} style={{ width: '100%', margin: '10px 0' }} />
+          <button onClick={execute} disabled={isPending}>{isPending ? 'executing...' : 'settle'}</button>
+          {hash && <p>tx: {hash.slice(0, 10)}...</p>}
           {isConfirming && <p>confirming...</p>}
-          {isConfirmed && <p style={{color: 'green'}}>success</p>}
-        </div>
+          {isConfirmed && <p style={{ color: 'green' }}>success</p>}
+        </section>
       )}
-    </div>
+    </main>
   );
 }
