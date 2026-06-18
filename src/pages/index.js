@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useAccount, useConnect, useBalance, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
-import { abi } from '../../utils/abi';
+import { abi } from '../../utils/abi'; 
 
 export default function Home() {
   const { address, isConnected } = useAccount();
@@ -9,34 +9,35 @@ export default function Home() {
   const { data: balance } = useBalance({ address });
   const [to, setTo] = useState('');
   const [amount, setAmount] = useState('');
+
   const { data: hash, writeContract, isPending } = useWriteContract();
   const { isSuccess: isConfirmed } = useWaitForTransactionReceipt({ hash });
 
-  const executeSettle = () => {
-    if (!to || !amount) return;
-    const formattedAmount = BigInt(Math.floor(Number(amount) * 10**6));
+  const handleSettle = () => {
+    // यहाँ 10**6 का फिक्स है ताकि USDC ट्रांसफर सही हो
+    const bigIntAmount = BigInt(Math.floor(Number(amount) * 10**6));
     writeContract({
       address: '0x5AD1C3710D65Fc824576A71143Dd63b2C30C6174',
       abi,
       functionName: 'settle',
-      args: [to, formattedAmount],
+      args: [to, bigIntAmount],
     });
   };
 
   return (
-    <main style={{ padding: '20px', maxWidth: '400px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+    <main style={{ padding: '20px', fontFamily: 'sans-serif', maxWidth: '400px', margin: 'auto' }}>
       <h1>Arc Settlement</h1>
       {!isConnected ? (
-        <button onClick={() => connect({ connector: connectors[0] })} style={{ width: '100%', padding: '15px' }}>Connect Passport</button>
+        <button onClick={() => connect({ connector: connectors[0] })}>Connect Wallet</button>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <div style={{ padding: '10px', border: '1px solid #ccc' }}>
-            <p>Account: {address?.slice(0, 6)}...{address?.slice(-4)}</p>
+        <div>
+          <div style={{ background: '#eee', padding: '10px', marginBottom: '10px' }}>
+            <p>Account: {address}</p>
             <p>Balance: {balance?.formatted} {balance?.symbol}</p>
           </div>
-          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} style={{ padding: '10px' }} />
-          <input placeholder="Amount (USDC)" type="number" onChange={(e) => setAmount(e.target.value)} style={{ padding: '10px' }} />
-          <button onClick={executeSettle} disabled={isPending} style={{ padding: '15px', background: isPending ? '#ccc' : '#000', color: '#fff' }}>
+          <input placeholder="Receiver Address" onChange={(e) => setTo(e.target.value)} style={{ display: 'block', marginBottom: '10px', width: '100%' }} />
+          <input placeholder="Amount (USDC)" type="number" onChange={(e) => setAmount(e.target.value)} style={{ display: 'block', marginBottom: '10px', width: '100%' }} />
+          <button onClick={handleSettle} disabled={isPending}>
             {isPending ? 'Processing...' : 'Settle'}
           </button>
           {isConfirmed && <p style={{ color: 'green' }}>Transaction Successful!</p>}
