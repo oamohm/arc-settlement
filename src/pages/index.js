@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPublicClient, http, formatEther, parseEther } from 'viem';
 
+// Arc Testnet RPC
 const client = createPublicClient({
   transport: http('https://rpc.testnet.arc.network')
 });
@@ -21,26 +22,20 @@ export default function Home() {
     
     try {
       const valueInWei = parseEther(amount);
-      const valueHex = '0x' + valueInWei.toString(16);
-
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       
+      // यहाँ हमने 'gas' और 'data' फील्ड को हटा दिया है ताकि वॉलेट सीधे नेटिव टोकन ट्रांसफर करे
       const txHash = await window.ethereum.request({
         method: 'eth_sendTransaction',
         params: [{ 
           from: accounts[0], 
           to: address, 
-          value: valueHex 
+          value: '0x' + valueInWei.toString(16),
+          // 'gasPrice' और 'gasLimit' को ऑटोमैटिक छोड़ दिया है ताकि ARC नेटवर्क खुद इसे हैंडल करे
         }],
       });
 
-      const newEntry = { 
-        hash: txHash, 
-        to: address, 
-        amount: amount, 
-        date: new Date().toLocaleDateString() 
-      };
-      
+      const newEntry = { hash: txHash, to: address, amount: amount };
       const updatedHistory = [newEntry, ...history];
       setHistory(updatedHistory);
       localStorage.setItem('txHistory', JSON.stringify(updatedHistory));
@@ -65,29 +60,16 @@ export default function Home() {
         loadData(accs[0]);
       }}>Connect & Refresh Balance</button>
       
-      <div style={{ marginTop: '20px' }}>
-        <p>Current Balance: {balance} USDC</p>
-        <input 
-          placeholder="Receiver Address" 
-          onChange={(e) => setAddress(e.target.value)} 
-          style={{ display: 'block', marginBottom: '10px', width: '300px' }}
-        />
-        <input 
-          placeholder="Amount" 
-          type="number" 
-          onChange={(e) => setAmount(e.target.value)} 
-          style={{ display: 'block', marginBottom: '10px', width: '300px' }}
-        />
-        <button onClick={handleSend}>Send Transaction</button>
-      </div>
+      <p>Balance: {balance} ARC</p>
+      <input placeholder="Receiver" onChange={(e) => setAddress(e.target.value)} />
+      <input placeholder="Amount" type="number" onChange={(e) => setAmount(e.target.value)} />
+      <button onClick={handleSend}>Send ARC</button>
 
-      <h2 style={{ marginTop: '30px' }}>Transaction History</h2>
+      <h2>History</h2>
       {history.map((tx, i) => (
-        <div key={i} style={{ border: '1px solid #ddd', margin: '10px 0', padding: '10px', borderRadius: '5px' }}>
-          <p>To: {tx.to.slice(0, 10)}... | Amount: {tx.amount} USDC</p>
-          <a href={`https://testnet.arcscan.app/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer">
-            Verify on ArcScan
-          </a>
+        <div key={i} style={{ border: '1px solid #ccc', padding: '5px', margin: '5px 0' }}>
+          <p>To: {tx.to.slice(0, 10)}... | Amount: {tx.amount}</p>
+          <a href={`https://testnet.arcscan.app/transaction/${tx.hash}`} target="_blank">Verify</a>
         </div>
       ))}
     </main>
