@@ -1,14 +1,18 @@
 import { WagmiProvider, createConfig, http } from 'wagmi';
-import { defineChain } from 'viem';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-// Arc Testnet का कॉन्फ़िगरेशन (इसे अपने नेटवर्क के अनुसार सही करें)
-const arcTestnet = defineChain({
-  id: 12345, // यहाँ अपना सही Chain ID डालें
+// Arc Testnet का सही कॉन्फ़िगरेशन
+const arcTestnet = {
+  id: 5042002, // आपके स्क्रीनशॉट के अनुसार
   name: 'Arc Testnet',
-  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
-  rpcUrls: { default: { http: ['YOUR_RPC_URL'] } }, // यहाँ अपना RPC URL डालें
-});
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+  rpcUrls: {
+    default: { http: ['https://rpc.testnet.arc.network'] },
+  },
+  blockExplorers: {
+    default: { name: 'ArcScan', url: 'https://testnet.arcscan.app' },
+  },
+};
 
 const config = createConfig({
   chains: [arcTestnet],
