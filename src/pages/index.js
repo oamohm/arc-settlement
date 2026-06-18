@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPublicClient, http, formatEther, parseEther } from 'viem';
 
-// Arc Testnet RPC
 const client = createPublicClient({
   transport: http('https://rpc.testnet.arc.network')
 });
@@ -24,14 +23,12 @@ export default function Home() {
       const valueInWei = parseEther(amount);
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       
-      // यहाँ हमने 'gas' और 'data' फील्ड को हटा दिया है ताकि वॉलेट सीधे नेटिव टोकन ट्रांसफर करे
       const txHash = await window.ethereum.request({
         method: 'eth_sendTransaction',
         params: [{ 
           from: accounts[0], 
           to: address, 
-          value: '0x' + valueInWei.toString(16),
-          // 'gasPrice' और 'gasLimit' को ऑटोमैटिक छोड़ दिया है ताकि ARC नेटवर्क खुद इसे हैंडल करे
+          value: '0x' + valueInWei.toString(16)
         }],
       });
 
@@ -60,16 +57,20 @@ export default function Home() {
         loadData(accs[0]);
       }}>Connect & Refresh Balance</button>
       
-      <p>Balance: {balance} ARC</p>
-      <input placeholder="Receiver" onChange={(e) => setAddress(e.target.value)} />
-      <input placeholder="Amount" type="number" onChange={(e) => setAmount(e.target.value)} />
-      <button onClick={handleSend}>Send ARC</button>
+      <div style={{ marginTop: '20px' }}>
+        <p>Balance: {balance} ARC</p>
+        <input placeholder="Receiver Address" onChange={(e) => setAddress(e.target.value)} style={{ display: 'block', marginBottom: '10px' }} />
+        <input placeholder="Amount" type="number" onChange={(e) => setAmount(e.target.value)} style={{ display: 'block', marginBottom: '10px' }} />
+        <button onClick={handleSend}>Send ARC</button>
+      </div>
 
-      <h2>History</h2>
+      <h2>Transaction History</h2>
       {history.map((tx, i) => (
-        <div key={i} style={{ border: '1px solid #ccc', padding: '5px', margin: '5px 0' }}>
-          <p>To: {tx.to.slice(0, 10)}... | Amount: {tx.amount}</p>
-          <a href={`https://testnet.arcscan.app/transaction/${tx.hash}`} target="_blank">Verify</a>
+        <div key={i} style={{ border: '1px solid #ccc', padding: '10px', margin: '10px 0' }}>
+          <p>To: {tx.to.slice(0, 10)}... | Amount: {tx.amount} ARC</p>
+          <a href={`https://testnet.arcscan.app/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer">
+            Verify on ArcScan
+          </a>
         </div>
       ))}
     </main>
