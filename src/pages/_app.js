@@ -8,7 +8,6 @@ const config = createConfig({
   connectors: [injected()],
   transports: { [mainnet.id]: http() },
 });
-
 const queryClient = new QueryClient();
 
 export default function App({ Component, pageProps }) {
